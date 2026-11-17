@@ -1583,6 +1583,11 @@ scene.add(new THREE.Points(starGeo, starMat));
 const DAY = { hemi: new THREE.Color(0xffffff), hemiG: new THREE.Color(0xd8e2d0), sun: new THREE.Color(0xfff2dc) };
 const NIGHT = { hemi: new THREE.Color(0x7c8cff), hemiG: new THREE.Color(0x2a3358), sun: new THREE.Color(0x9fb4ff) };
 const SUNSET_SUN = new THREE.Color(0xffa36b);
+// warm glows over the story spots, only switched up at night (always in the scene so toggling never recompiles shaders)
+const nightLights = [
+  [toW3(wg, 0, 4.5, ARCH_Z - 1.0), 1.0, 26], [toW3(wg, 0, 5, -3.5), 0.9, 26],
+  [toW3(fg, 0, 5, 0), 0.8, 22], [toW3(gal, 0, 5, 0), 0.8, 24],
+].map(([p, w, dist]) => { const l = new THREE.PointLight(0xffc98a, 0, dist, 1.2); l.position.copy(p); l.userData.w = w; world.add(l); return l; });
 function setNight(on) {
   nightTarget = on ? 1 : 0;
   document.getElementById('nightIcon').textContent = on ? '☀️' : '🌙';
@@ -1596,7 +1601,8 @@ function tickNight(dt, t) {
   }
   const k = nightK;
   if (Math.abs(k - skyPainted) > 0.004 || (k !== skyPainted && (k === 0 || k === 1))) { paintSky(k); skyPainted = k; }
-  hemi.intensity = 1.4 - k * 0.75; hemi.color.copy(DAY.hemi).lerp(NIGHT.hemi, k); hemi.groundColor.copy(DAY.hemiG).lerp(NIGHT.hemiG, k);
+  hemi.intensity = 1.4 - k * 0.55;
+  for (const l of nightLights) l.intensity = k * 26 * l.userData.w; hemi.color.copy(DAY.hemi).lerp(NIGHT.hemi, k); hemi.groundColor.copy(DAY.hemiG).lerp(NIGHT.hemiG, k);
   sun.intensity = 2.6 - k * 2.05;
   sun.color.copy(DAY.sun).lerp(SUNSET_SUN, Math.min(1, k * 2)).lerp(NIGHT.sun, Math.max(0, k * 2 - 1));
   CAP_MAT.emissiveIntensity = k * 1.6;
