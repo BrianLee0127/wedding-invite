@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Lovie &amp; Jonus · You're Invited</title>
+<title>Lovie &amp; Jones · You're Invited</title>
 <meta name="description" content="Step onto our little floating island — the ceremony, our story, and a wish for the two of us." />
-<meta property="og:title" content="Lovie &amp; Jonus are getting married 💐" />
+<meta property="og:title" content="Lovie &amp; Jones are getting married 💐" />
 <meta property="og:description" content="Step onto our little floating island — tap around, take a stroll, and leave us a wish." />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="https://brianlee0127.github.io/wedding-invite/og.jpg" />
@@ -177,7 +177,7 @@ import * as THREE from 'three';
    EDIT YOUR DETAILS HERE
    ====================================================================== */
 const CONFIG = {
-  bride: 'Lovie', groom: 'Jonus',
+  bride: 'Lovie', groom: 'Jones',
   dateText: 'Date to be announced',                 // e.g. 'Saturday, 12 June 2027'
   venue: {
     name: 'Your Venue Name',
@@ -1498,6 +1498,51 @@ function openWish() {
   });
 }
 
+
+/* ---------- sidewalk lamps: iron posts with glass lanterns, glowing at night ---------- */
+const LAMP_IRON = toon({ color: 0x2f3a3a });
+const LAMP_GLASS = toon({ color: 0xfff1c2, emissive: 0xffc861, emissiveIntensity: 0.15 });
+const lampHaloMat = new THREE.SpriteMaterial({ map: lanternGlowTex, color: 0xffe3a0, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 });
+const poolTex = canvasTex(128, 128, (g) => {
+  const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,214,140,.9)'); gr.addColorStop(1, 'rgba(255,200,120,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+});
+const lampPoolMat = new THREE.MeshBasicMaterial({ map: poolTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 });
+const lampGeo = {
+  base: new THREE.CylinderGeometry(0.2, 0.26, 0.3, 8), post: new THREE.CylinderGeometry(0.06, 0.08, 3.2, 8),
+  ring: new THREE.TorusGeometry(0.13, 0.03, 6, 12), glass: new THREE.CylinderGeometry(0.2, 0.15, 0.42, 6),
+  cap: new THREE.ConeGeometry(0.27, 0.24, 6), knob: new THREE.SphereGeometry(0.05, 8, 6), pool: new THREE.CircleGeometry(2.3, 24),
+};
+const lampSpots = [];
+function streetLamp(x, z) {
+  if (Math.hypot(x, z) > rEdge(Math.atan2(z, x)) * 0.84 || lakeD(x, z) < 1.5 || (Math.abs(x - lake.x) < 2.6 && z > lake.z)) return;
+  if (mountainH(x, z) > 1.2 || roadDist(x, z) < 1.9) return;
+  if (colliders.some(c => c.tag !== 'tree' && Math.hypot(x - c.x, z - c.z) < c.r + 0.45)) return;
+  if (lampSpots.some(([px, pz]) => Math.hypot(x - px, z - pz) < 3)) return;
+  lampSpots.push([x, z]); clearTreesAround(x, z, 1.6);
+  for (let i = colliders.length - 1; i >= 0; i--) if (colliders[i].tag === 'tree' && Math.hypot(x - colliders[i].x, z - colliders[i].z) < 1.6) colliders.splice(i, 1);
+  addCol(x, z, 0.3, 'street lamp');
+  const L = new THREE.Group(), y = groundAt(x, z);
+  const part = (geo, mat, py, outline = 0.02) => { const m = new THREE.Mesh(geo, mat); m.position.y = py; m.castShadow = true; L.add(outline ? withOutline(m, outline) : m); return m; };
+  part(lampGeo.base, LAMP_IRON, 0.15); part(lampGeo.post, LAMP_IRON, 1.9);
+  const r = part(lampGeo.ring, LAMP_IRON, 1.2, 0); r.rotation.x = Math.PI / 2;
+  part(lampGeo.glass, LAMP_GLASS, 3.72); part(lampGeo.cap, LAMP_IRON, 4.05); part(lampGeo.knob, LAMP_IRON, 4.22, 0);
+  const halo = new THREE.Sprite(lampHaloMat); halo.scale.setScalar(2.6); halo.position.y = 3.72; L.add(halo);
+  const pool = new THREE.Mesh(lampGeo.pool, lampPoolMat); pool.rotation.x = -Math.PI / 2; pool.position.y = 0.06; L.add(pool);
+  L.position.set(x, y, z); world.add(L);
+}
+// both sides of each road, staggered against the wooden light posts
+roadCurves.forEach((c, ri) => {
+  const len = c.getLength();
+  for (let d = 0.8, k = 0; d < len; d += ri === 0 ? 4.2 : 2.6, k++) {
+    const u = Math.min(1, d / len), p = c.getPointAt(u), t = c.getTangentAt(u), l = Math.hypot(t.x, t.z);
+    for (const sd of [-1, 1]) streetLamp(p.x - (t.z / l) * 3.0 * sd, p.z + (t.x / l) * 3.0 * sd);
+  }
+});
+// around the fountain, ceremony and gallery plazas
+for (const [q, rad, n] of [[fountain, 8.9, 10], [fountain, 10.2, 10], [garden, 13.4, 16], [garden, 14.6, 16], [gallery, 10.5, 12], [gallery, 11.8, 12]])
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + 0.3; streetLamp(q.x + Math.cos(a) * rad, q.z + Math.sin(a) * rad); }
+
 /* ---------- 7. day / night ---------- */
 let nightK = 0, nightTarget = 0;
 const glowTex = canvasTex(64, 64, (g) => {
@@ -1555,6 +1600,7 @@ function tickNight(dt, t) {
   sun.intensity = 2.6 - k * 2.05;
   sun.color.copy(DAY.sun).lerp(SUNSET_SUN, Math.min(1, k * 2)).lerp(NIGHT.sun, Math.max(0, k * 2 - 1));
   CAP_MAT.emissiveIntensity = k * 1.6;
+  LAMP_GLASS.emissiveIntensity = 0.15 + k * 1.8; lampHaloMat.opacity = k * 0.9; lampPoolMat.opacity = k * 0.55;
   haloMat.opacity = k * 0.85; starMat.opacity = Math.max(0, k * 1.4 - 0.4);
   ffMat.opacity = Math.max(0, k * 1.3 - 0.3) * (0.7 + 0.3 * Math.sin(t * 3));
   for (const c of clouds) c.material.color.setRGB(1 - k * 0.55, 1 - k * 0.5, 1 - k * 0.3);
