@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>You're Invited · Our Wedding</title>
+<title>Lovie &amp; Jonus · You're Invited</title>
 <meta name="description" content="Step onto our little floating island — the ceremony, our story, and a wish for the two of us." />
-<meta property="og:title" content="You're invited to our wedding 💐" />
+<meta property="og:title" content="Lovie &amp; Jonus are getting married 💐" />
 <meta property="og:description" content="Step onto our little floating island — tap around, take a stroll, and leave us a wish." />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="https://brianlee0127.github.io/wedding-invite/og.jpg" />
@@ -52,7 +52,7 @@
     opacity: 0; transition: opacity .2s; white-space: nowrap; box-shadow: 0 6px 20px rgba(255,122,162,.35);
   }
   .tip.show { opacity: 1; }
-  @media (max-width: 520px) { .card { left: 16px; top: 16px; padding: 14px 16px; } .card h2 { font-size: 22px; } .card p { font-size: 14px; } #nav button { padding: 10px 12px; font-size: 13px; } .hint { font-size: 10px; letter-spacing: .08em; white-space: nowrap; } }
+  @media (max-width: 520px) { .card { left: 16px; top: 16px; padding: 14px 16px; max-width: calc(100vw - 90px); } .card h2 { font-size: 22px; } .card p { font-size: 14px; } #nav button { padding: 10px 12px; font-size: 13px; } .hint { font-size: 10px; letter-spacing: .08em; white-space: nowrap; } }
   #joy {
     position: fixed; left: 28px; bottom: 104px; width: 124px; height: 124px; border-radius: 50%; display: none;
     background: rgba(255,255,255,.3); border: 2px solid rgba(255,255,255,.75); touch-action: none;
@@ -177,7 +177,7 @@ import * as THREE from 'three';
    EDIT YOUR DETAILS HERE
    ====================================================================== */
 const CONFIG = {
-  bride: 'Bride', groom: 'Groom',
+  bride: 'Lovie', groom: 'Jonus',
   dateText: 'Date to be announced',                 // e.g. 'Saturday, 12 June 2027'
   venue: {
     name: 'Your Venue Name',
@@ -717,7 +717,7 @@ const signTex = canvasTex(512, 300, (g, w, h) => {
   g.strokeStyle = '#e7a9b8'; g.lineWidth = 10; g.strokeRect(14, 14, w - 28, h - 28);
   g.fillStyle = '#6b4a3a'; g.textAlign = 'center';
   g.font = 'italic 64px Georgia, serif'; g.fillText('Welcome', w / 2, 135);
-  g.font = '30px Georgia, serif'; g.fillText('to our wedding', w / 2, 195);
+  g.font = 'italic 34px Georgia, serif'; g.fillText(`${CONFIG.bride} & ${CONFIG.groom}`, w / 2, 195);
   g.fillStyle = '#f48aa8'; g.font = '34px serif'; g.fillText('♥', w / 2, 250);
 });
 const sign = new THREE.Group();
@@ -1850,7 +1850,8 @@ charsReady.then(() => {
 /* ---------- guided views: fly the camera between story spots ---------- */
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const VIEWS = {
-  island:   { pos: V(105, 62, 130), target: V(0, 0, 0), title: '', text: '' },
+  island:   { pos: V(105, 62, 130), target: V(0, 0, 0), title: `${esc(CONFIG.bride)} &amp; ${esc(CONFIG.groom)}`,
+              text: `are getting married!<br><small>${esc(CONFIG.dateText)}</small>` },
   ceremony: { pos: V(garden.x + 20, 14, garden.z + 26), target: V(garden.x, 4.5, garden.z),
               title: 'The Ceremony', text: 'Join us under the flower arch as we say “I do”.<br><small>Date &amp; time · to be announced</small>' },
   gallery:  { pos: V(gallery.x + 30, 16, gallery.z + 4), target: V(gallery.x, 4.5, gallery.z),
